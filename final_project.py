@@ -7,12 +7,12 @@ from qiskit.compiler import transpile, assemble
 
 
 def code_to_sign_pattern(code):
-    signs = [-1]*4
+    signs = [1]*4
     modulus = code
-    for idx in reversed(range(4)):
-        if modulus >= 2**idx:
-            signs[idx] = 1
-            modulus -= 2**idx
+    for idx in range(4):
+        if modulus >= 2**(3-idx):
+            signs[idx] = -1
+            modulus -= 2**(3-idx)
 
     return signs
 
@@ -72,9 +72,6 @@ def create_perceptron_circuit(data_code, weight_code):
     data_signs = code_to_sign_pattern(data_code)
     weight_signs = code_to_sign_pattern(weight_code)
 
-    import ipdb; ipdb.set_trace()
-
-
     count_to_idxs = {
         1: [1, 2],
         2: [3],
@@ -115,7 +112,7 @@ def main():
     # Use Aer's qasm_simulator
     simulator = Aer.get_backend('qasm_simulator')
 
-    data_code = 2
+    data_code = 0
     for weight_code in range(16):
         circuit = create_perceptron_circuit(data_code, weight_code)
 
