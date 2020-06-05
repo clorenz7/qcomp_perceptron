@@ -20,13 +20,14 @@ def implement_HSGS_2qubit(circuit, signs, count_map):
 
 
     # Define the binary representation of each state
-    binary_reps = ["00", "01", "10", "11"]
+    # binary_reps = ["00", "01", "10", "11"]
+    binary_reps = ["11", "10", "01", "00"]
 
     # Initialize array to track which sign we have applied to each state
     implemented_signs = [1]*4
 
     # Flip all of the signs if coefficient for |00> is -1
-    if signs[0] == -1:
+    if signs[3] == -1:
         signs = [s*-1 for s in signs]
 
     # Apply the sign changes for states with a single "1", eg |01> and |10>
@@ -74,7 +75,7 @@ def create_perceptron_circuit(data_code, weight_code):
 
     count_to_idxs = {
         1: [1, 2],
-        2: [3],
+        2: [0],
     }
 
     # Apply the unitary transform to initialize the data
@@ -115,7 +116,8 @@ def main():
     data_code = 0
     for weight_code in range(16):
         circuit = create_perceptron_circuit(data_code, weight_code)
-
+        # import ipdb; ipdb.set_trace()
+        # circuit.draw()
 
         # Execute the circuit on the qasm simulator
         job = execute(circuit, simulator, shots=8192)
