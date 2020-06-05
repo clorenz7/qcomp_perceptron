@@ -1,5 +1,8 @@
 import math
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 from qiskit import QuantumCircuit, execute, Aer, IBMQ
 from qiskit.compiler import transpile, assemble
 # from qiskit.tools.jupyter import *
@@ -18,9 +21,7 @@ def code_to_sign_pattern(code):
 
 def implement_HSGS_2qubit(circuit, signs, count_map):
 
-
     # Define the binary representation of each state
-    # binary_reps = ["00", "01", "10", "11"]
     binary_reps = ["11", "10", "01", "00"]
 
     # Initialize array to track which sign we have applied to each state
@@ -110,24 +111,39 @@ def create_perceptron_circuit(data_code, weight_code):
 
 def main():
 
+    n_shots = 8192
+
     # Use Aer's qasm_simulator
     simulator = Aer.get_backend('qasm_simulator')
 
-    data_code = 0
-    for weight_code in range(16):
-        circuit = create_perceptron_circuit(data_code, weight_code)
-        # import ipdb; ipdb.set_trace()
-        # circuit.draw()
+    results_matrix = np.zeros((16,16))
 
-        # Execute the circuit on the qasm simulator
-        job = execute(circuit, simulator, shots=8192)
+    for data_code in range(16):
+        for weight_code in range(16):
+            circuit = create_perceptron_circuit(data_code, weight_code)
+            if data_code == 11 and weight_code == 7:
+                import ipdb; ipdb.set_trace()
+                # circuit.draw()
 
-        # Grab results from the job
-        result = job.result()
+            # Execute the circuit on the qasm simulator
+            job = execute(circuit, simulator, shots=n_shots)
 
-        # Return counts
-        counts = result.get_counts(circuit)
-        print("Total [0,1] counts for i={} and w={} are:".format(data_code, weight_code),counts)
+            # Grab results from the job
+            result = job.result()
+
+            # Return counts
+            counts = result.get_counts(circuit)
+            print("Total [0,1] counts for i={} and w={} are:".format(data_code, weight_code),counts)
+
+            results_matrix[data_code, weight_code] = counts.get('1', 0)/n_shots
+
+    plt.imshow(results_matrix)
+    plt.xlabel('Weight Code ($w_j$)')
+    plt.ylabel('Data Code ($i_k$)')
+    plt.colorbar()
+    plt.title('Simulated Probabilities')
+    plt.show()
+
 
 
 if __name__ == '__main__':
