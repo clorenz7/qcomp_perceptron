@@ -48,7 +48,7 @@ def implement_HSGS_2qubit(circuit, signs, count_map):
 
 
     # Apply the sign change for the states with 2 "1" qubits, eg |11>
-    for idxs in count_map.get(2, []):
+    for idx in count_map.get(2, []):
         # See if the sign that is implemented is not correct
         if signs[idx] != implemented_signs[idx]:
             # Get the binary representation of this index
