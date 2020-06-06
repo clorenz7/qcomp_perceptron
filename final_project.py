@@ -173,11 +173,13 @@ def main(backend=None):
     plt.xlabel('Weight Code ($w_j$)')
     plt.ylabel('Data Code ($i_k$)')
     plt.colorbar()
-    plt.title('Simulated Probabilities')
+    plt.clim([0, 1])
+    plt.title('Experimental Probabilities')
     plt.show()
 
 
 if __name__ == '__main__':
+    token = 'add_token_from_IBM_account'
     provider = IBMQ.enable_account(token)
 
     backend = provider.get_backend('ibmq_5_yorktown')
