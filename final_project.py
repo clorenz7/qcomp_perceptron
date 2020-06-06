@@ -2,7 +2,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from qiskit import QuantumCircuit, execute, Aer
+from qiskit import QuantumCircuit, execute, Aer, IBMQ
+from qiskit.compiler import transpile, assemble
 
 
 def code_to_sign_pattern(code):
@@ -40,7 +41,7 @@ def implement_HSGS_2qubit(circuit, signs, count_map):
             a list of the comp basis indexes with that number of "1" qubits
 
     outputs:
-        circuit: IBM QuantumCircuit object with the appropriate unitary transform added to it
+        circuit: IBM QuantumCircuit object with the HSGS unitary transform added to it
     """
 
     # Define the binary representation of each state
@@ -135,12 +136,13 @@ def create_perceptron_circuit(data_code, weight_code):
     return circuit
 
 
-def main():
+def main(backend=None):
 
     n_shots = 8192  # Match the # of shots used in the paper
 
     # Use Aer's qasm_simulator
-    simulator = Aer.get_backend('qasm_simulator')
+    if backend is None:
+        backend = Aer.get_backend('qasm_simulator')
 
     results_matrix = np.zeros((16,16))
 
@@ -154,7 +156,7 @@ def main():
                 import ipdb; ipdb.set_trace()
 
             # Execute the circuit on the qasm simulator
-            job = execute(circuit, simulator, shots=n_shots)
+            job = execute(circuit, backend, shots=n_shots)
 
             # Grab results from the job
             result = job.result()
@@ -176,4 +178,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    provider = IBMQ.enable_account(token)
+
+    backend = provider.get_backend('ibmq_5_yorktown')
+
+    # Maybe try 'ibmqx4'?
+
+    main(backend)
