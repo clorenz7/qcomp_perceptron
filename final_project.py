@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from qiskit import QuantumCircuit, execute, Aer, IBMQ
-from qiskit.compiler import transpile, assemble
 
 
 def code_to_sign_pattern(code):
@@ -179,11 +178,8 @@ def main(backend=None):
 
 
 if __name__ == '__main__':
-    token = 'add_token_from_IBM_account'
+    token = 'paste_token_from_IBM_account'
     provider = IBMQ.enable_account(token)
-
     backend = provider.get_backend('ibmq_5_yorktown')
-
-    # Maybe try 'ibmqx4'?
 
     main(backend)
