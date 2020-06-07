@@ -182,4 +182,4 @@ if __name__ == '__main__':
     provider = IBMQ.enable_account(token)
     backend = provider.get_backend('ibmq_5_yorktown')
 
-    main(backend)
+    main(backend)  # Set backend to None to use simulator
