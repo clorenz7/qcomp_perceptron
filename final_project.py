@@ -67,9 +67,9 @@ def implement_HSGS_nqubits(circuit, signs, n_qubits=2):
     if signs[0] == -1:
         signs = [s*-1 for s in signs]
 
-    # Increment over the # of "1" qubits in the basis state
+    # Increment over the count of "1" qubits in the basis state
     for count in range(1,n_qubits+1):
-        # Loop over all of the states which have count # of "1" qubits
+        # Loop over all of the states which have that count of "1" qubits
         for idx in count_map.get(count, []):
             # See if the sign that is implemented is not correct
             if signs[idx] != implemented_signs[idx]:
