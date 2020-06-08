@@ -146,13 +146,10 @@ def create_perceptron_circuit(data_code, weight_code, n_qubits=2):
     return circuit
 
 
-def replicate_2qbit_results(backend=None):
-
-    n_shots = 8192  # Match the # of shots used in the paper
-
-    # Use Aer's qasm_simulator
-    if backend is None:
-        backend = Aer.get_backend('qasm_simulator')
+def replicate_2qbit_results(backend, n_shots=8192):
+    """
+    Code to replicate HSGS results in Figure 3 of original paper
+    """
 
     results_matrix = np.zeros((16,16))
 
@@ -163,19 +160,17 @@ def replicate_2qbit_results(backend=None):
             # Pause simulation to check circuit is implemented as in the paper
             if data_code == 11 and weight_code == 7:
                 # circuit.draw()
-                import ipdb; ipdb.set_trace()
+                import pdb; pdb.set_trace()
 
             # Execute the circuit on the qasm simulator
             job = execute(circuit, backend, shots=n_shots)
 
-            # Grab results from the job
+            # Grab results from the job and get counts
             result = job.result()
-
-            # Return counts
             counts = result.get_counts(circuit)
             print("Total counts for i={} and w={} are:".format(data_code, weight_code),counts)
 
-            # Store results in the matrix
+            # Store normalized result in the matrix
             results_matrix[data_code, weight_code] = counts.get('1', 0)/n_shots
 
     # Visualize the results as an image
@@ -188,6 +183,75 @@ def replicate_2qbit_results(backend=None):
     plt.show()
 
 
+def bit_string_to_img(bit_string):
+    """
+    Coverts from the bit string representation to its image
+    """
+    m = len(bit_string)
+    img = np.zeros((m))
+    for ii, bit in enumerate(bit_string):
+        if bit == '0':
+            img[ii] = 255
+
+    hm = int(np.sqrt(m))
+    return img.reshape((hm, hm))
+
+def plot_bit_string(bit_string):
+    """
+    Plots the image associated with a data bit string
+    """
+    ax = plt.imshow(bit_string_to_img(bit_string), cmap='gray')
+    ax.axes.xaxis.set_visible(False)
+    ax.axes.yaxis.set_visible(False)
+
+    return ax
+
+def replicate_4qbit_results(backend, n_shots=8192):
+    """
+    Code to replicate the 4 qubit results from the original paper
+    """
+    # Read off the pixel values from Fig 4 of the paper
+    w = '0000001001110010'
+    i_bit_strings = [
+        '0000001001110000',
+        '1111110110101101',
+        '0000001001000010',
+        '1111110110011101',
+        '1100000001001000',
+        '0011110111111111',
+        '1001000100000000',
+        '1000100001000010'
+    ]
+    # Convert these to the integer codes
+    weight_code = int(w,2)
+
+    # Plot the weight image first
+    sub = plt.subplot(3, 3, 1)
+    plot_bit_string(w)
+    sub.set_title('w')
+
+    results = []
+    for ii, i_bit_str in enumerate(i_bit_strings):
+        data_code = int(i_bit_str, 2)
+        circuit = create_perceptron_circuit(data_code, weight_code, n_qubits=4)
+
+        # Run the quantum circuit and grab results
+        job = execute(circuit, backend, shots=n_shots)
+        result = job.result()
+
+        # Get counts and normalize to get a probability
+        counts = result.get_counts(circuit)
+        prob = counts.get('1', 0)/n_shots
+        results.append(prob)
+
+        # Plot the data image and the associated probability
+        sub = plt.subplot(3, 3, ii+2)
+        plot_bit_string(i_bit_str)
+        sub.set_title("q.alg.={:0.4f}".format(prob))
+
+    plt.show()
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--token", "-t",  help="Auth Token from IBM Website")
@@ -197,21 +261,24 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         "-e", "--experiment", type=str, default='2qubits',
-        help="Which experiment to run, either 2qubits or 4qubits"
+        help="Which experiment to run, either '2qubits' or '4qubits'"
     )
     cli_args = parser.parse_args()
 
     if cli_args.token is not None and cli_args.backend is not None:
         provider = IBMQ.enable_account(cli_args.token)
         backend = provider.get_backend(cli_args.backend)
+        print("Using IBM Backend ", cli_args.backend)
     else:
         print("Backend not properly specified. Using Aer simulator.")
-        backend = None
+        backend = Aer.get_backend('qasm_simulator')
 
     if cli_args.experiment.lower() == "2qubits":
-        replicate_2qbit_results(backend)  # Set backend to None to use simulator
+        print("Running the 2 qubit experiment")
+        replicate_2qbit_results(backend)
     elif cli_args.experiment.lower() == "4qubits":
-        pass
+        print("Running the 4 qubit experiment")
+        replicate_4qbit_results(backend)
     else:
         raise RuntimeError("Unknown experiment type ", cli_args.experiment)
 
