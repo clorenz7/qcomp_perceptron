@@ -85,8 +85,10 @@ def implement_HSGS_nqubits(circuit, signs, n_qubits=2):
                     # With a controlled Z gate, it doesn't matter which is control or target
                     circuit.cz(apply_qbits[0], apply_qbits[1])
                 else:
+                    ctrl_qubits = [circuit.qubits[i] for i in apply_qbits[1:]]
+                    targ_qubit = circuit.qubits[apply_qbits[0]]
                     # CRZ gate with theta=-pi is equiv to a CZ gate up to global phase
-                    circuit.mcrz(-np.pi, apply_qbits[1:], apply_qbits[0])
+                    circuit.mcrz(-np.pi, ctrl_qubits, targ_qubit)
 
                 # Update the signs to be what is currently implemented.
                 for i, bin_rep in enumerate(binary_reps):
