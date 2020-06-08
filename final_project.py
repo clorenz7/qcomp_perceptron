@@ -280,5 +280,5 @@ if __name__ == '__main__':
         print("Running the 4 qubit experiment")
         replicate_4qbit_results(backend)
     else:
-        raise RuntimeError("Unknown experiment type ", cli_args.experiment)
+        raise RuntimeError("Unknown experiment type: {}".format(cli_args.experiment))
 
